@@ -44,4 +44,36 @@ library NFTPositionInfo {
             )
         );
     }
+
+    /// @notice Returns token addresses and balances for a given NFT position
+    /// @param nonfungiblePositionManager The address of the nonfungible position manager to query
+    /// @param tokenId The unique identifier of an Uniswap V3 LP token
+    /// @return token0 The address of the first token in the pair
+    /// @return token1 The address of the second token in the pair
+    /// @return amount0 The amount of token0 in the position
+    /// @return amount1 The amount of token1 in the position
+    function getTokenBalances(
+        INonfungiblePositionManager nonfungiblePositionManager,
+        uint256 tokenId
+    )
+        internal
+        view
+        returns (
+            address token0,
+            address token1,
+            uint256 amount0,
+            uint256 amount1
+        )
+    {
+        (, , token0, token1, , , , , , , , ) = nonfungiblePositionManager.positions(tokenId);
+
+        (amount0, amount1) = nonfungiblePositionManager.collect(
+            INonfungiblePositionManager.CollectParams({
+                tokenId: tokenId,
+                recipient: address(this), // Use the current contract as the recipient
+                amount0Max: type(uint128).max,
+                amount1Max: type(uint128).max
+            })
+        );
+    }
 }
