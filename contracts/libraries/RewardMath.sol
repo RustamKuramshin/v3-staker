@@ -39,4 +39,15 @@ library RewardMath {
 
         reward = FullMath.mulDiv(totalRewardUnclaimed, secondsInsideX128, totalSecondsUnclaimedX128);
     }
+
+    /// @notice Computes the remaining time for an incentive program
+    /// @param currentTime The current block timestamp
+    /// @param endTime The timestamp when the incentive program ends
+    /// @return remainingTime The remaining time in seconds until the incentive program ends
+    function computeRemainingTime(uint256 currentTime, uint256 endTime) internal pure returns (uint256 remainingTime) {
+        if (currentTime >= endTime) {
+            return 0; // If the current time is past the end time, no time remains
+        }
+        return endTime - currentTime;
+    }
 }
