@@ -11,4 +11,11 @@ library IncentiveId {
     function compute(IUniswapV3Staker.IncentiveKey memory key) internal pure returns (bytes32 incentiveId) {
         return keccak256(abi.encode(key));
     }
+
+    /// @notice Decode the incentive identifier back into its components
+    /// @param incentiveId The identifier for the incentive
+    /// @return key The components used to compute the incentive identifier
+    function decode(bytes32 incentiveId) internal pure returns (IUniswapV3Staker.IncentiveKey memory key) {
+        return abi.decode(abi.encodePacked(incentiveId), (IUniswapV3Staker.IncentiveKey));
+    }
 }
