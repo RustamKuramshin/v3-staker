@@ -36,4 +36,29 @@ library TransferHelperExtended {
         require(token.isContract(), 'TransferHelperExtended::safeTransfer: call to non-contract');
         TransferHelper.safeTransfer(token, to, value);
     }
+
+    /// @notice Safely checks if the sender has enough balance before transferring tokens
+    /// @param token The contract address of the token to be checked
+    /// @param from The address whose balance will be checked
+    /// @param value The amount to be transferred
+    function safeCheckAndTransferFrom(
+        address token,
+        address from,
+        address to,
+        uint256 value
+    ) internal {
+        require(token.isContract(), 'TransferHelperExtended::safeCheckAndTransferFrom: call to non-contract');
+
+        // Check the balance of the sender
+        (bool success, bytes memory data) = token.staticcall(
+            abi.encodeWithSignature("balanceOf(address)", from)
+        );
+        require(success && data.length >= 32, 'TransferHelperExtended::safeCheckAndTransferFrom: balance check failed');
+
+        uint256 balance = abi.decode(data, (uint256));
+        require(balance >= value, 'TransferHelperExtended::safeCheckAndTransferFrom: insufficient balance');
+
+        // Perform the transfer
+        TransferHelper.safeTransferFrom(token, from, to, value);
+    }
 }
