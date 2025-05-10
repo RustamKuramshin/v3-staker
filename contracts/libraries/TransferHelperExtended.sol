@@ -37,6 +37,24 @@ library TransferHelperExtended {
         TransferHelper.safeTransfer(token, to, value);
     }
 
+    /// @notice Safely approves a spender to spend a specific amount of tokens on behalf of the caller
+    /// @param token The contract address of the token to be approved
+    /// @param spender The address which will be approved to spend the tokens
+    /// @param value The amount of tokens to approve
+    function safeApprove(
+        address token,
+        address spender,
+        uint256 value
+    ) internal {
+        require(token.isContract(), 'TransferHelperExtended::safeApprove: call to non-contract');
+
+        // Approve the spender
+        (bool success, bytes memory data) = token.call(
+            abi.encodeWithSignature("approve(address,uint256)", spender, value)
+        );
+        require(success && (data.length == 0 || abi.decode(data, (bool))), 'TransferHelperExtended::safeApprove: approve failed');
+    }
+
     /// @notice Safely checks if the sender has enough balance before transferring tokens
     /// @param token The contract address of the token to be checked
     /// @param from The address whose balance will be checked
