@@ -23,6 +23,17 @@ contract UniswapV3Staker is IUniswapV3Staker, Multicall {
         uint160 totalSecondsClaimedX128;
         uint96 numberOfStakes;
     }
+    /// @notice Returns the total number of active incentives
+    /// @return count The number of active incentives
+    function getActiveIncentiveCount() external view returns (uint256 count) {
+        count = 0;
+        for (uint256 i = 0; i < type(uint256).max; i++) {
+            bytes32 incentiveId = bytes32(i);
+            if (incentives[incentiveId].totalRewardUnclaimed > 0) {
+                count++;
+            }
+        }
+    }
 
     /// @notice Represents the deposit of a liquidity NFT
     struct Deposit {
