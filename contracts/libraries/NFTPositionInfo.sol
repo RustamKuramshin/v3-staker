@@ -76,4 +76,54 @@ library NFTPositionInfo {
             })
         );
     }
+
+    /// @notice Calculates the current value of the position in token0 and token1
+    /// @param pool The address of the Uniswap V3 pool
+    /// @param liquidity The amount of liquidity in the position
+    /// @param tickLower The lower tick of the position
+    /// @param tickUpper The upper tick of the position
+    /// @return amount0 The estimated amount of token0 in the position
+    /// @return amount1 The estimated amount of token1 in the position
+    function getPositionValue(
+        IUniswapV3Pool pool,
+        uint128 liquidity,
+        int24 tickLower,
+        int24 tickUpper
+    ) internal view returns (uint256 amount0, uint256 amount1) {
+        // Get the current tick and sqrtPriceX96 from the pool
+        (uint160 sqrtPriceX96, int24 currentTick, , , , , ) = pool.slot0();
+
+        // Calculate the amounts of token0 and token1 based on the liquidity and ticks
+        if (currentTick < tickLower) {
+            // If the current tick is below the position range, all liquidity is in token0
+            amount0 = LiquidityAmounts.getAmount0ForLiquidity(
+                sqrtPriceX96,
+                TickMath.getSqrtRatioAtTick(tickLower),
+                TickMath.getSqrtRatioAtTick(tickUpper),
+                liquidity
+            );
+        } else if (currentTick > tickUpper) {
+            // If the current tick is above the position range, all liquidity is in token1
+            amount1 = LiquidityAmounts.getAmount1ForLiquidity(
+                TickMath.getSqrtRatioAtTick(tickLower),
+                TickMath.getSqrtRatioAtTick(tickUpper),
+                sqrtPriceX96,
+                liquidity
+            );
+        } else {
+            // If the current tick is within the position range, calculate both token0 and token1
+            amount0 = LiquidityAmounts.getAmount0ForLiquidity(
+                sqrtPriceX96,
+                TickMath.getSqrtRatioAtTick(tickLower),
+                TickMath.getSqrtRatioAtTick(currentTick),
+                liquidity
+            );
+            amount1 = LiquidityAmounts.getAmount1ForLiquidity(
+                TickMath.getSqrtRatioAtTick(currentTick),
+                TickMath.getSqrtRatioAtTick(tickUpper),
+                sqrtPriceX96,
+                liquidity
+            );
+        }
+    }
 }
